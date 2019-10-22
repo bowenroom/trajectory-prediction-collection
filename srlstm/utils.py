@@ -40,14 +40,14 @@ class DataLoader_bytrajec2():
                 self.test_set = [4, 5]
             else:
                 self.test_set = [self.args.test_set]
-
+            # 此处的test可以理解为验证集，是文章中的leave one out 的具体的代码写法,同时代码中的数据集需要注意：0~4 for ETH-univ, ETH-hotel, UCY-zara01, UCY-zara02, UCY-univ
             for x in self.test_set:
                 train_set.remove(x)
             self.train_dir = [self.data_dirs[x] for x in train_set]
             self.test_dir = [self.data_dirs[x] for x in self.test_set]
             self.trainskip = [skip[x] for x in train_set]
             self.testskip = [skip[x] for x in self.test_set]
-
+        # 学会这种写法，将划分好的数据文件以cpkl的形式保存在save_dir之中
         self.train_data_file = os.path.join(self.args.save_dir, "train_trajectories.cpkl")
         self.test_data_file = os.path.join(self.args.save_dir, "test_trajectories.cpkl")
         self.train_batch_cache = os.path.join(self.args.save_dir, "train_batch_cache.cpkl")

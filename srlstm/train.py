@@ -194,7 +194,8 @@ def load_arg(p):
 
 
 def save_arg(args):
-    # save arg
+    # use the yaml config file to save arg that we have previously set
+    # 原先的args是一种赋值形式的，利用内置的vars方法，转换为字典+键值对的形式{'A':1,'B':2}
     arg_dict = vars(args)
     if not os.path.exists(args.model_dir):
         os.makedirs(args.model_dir)
@@ -205,8 +206,10 @@ def save_arg(args):
 if __name__ == '__main__':
     parser = get_parser()
     p = parser.parse_args()
+    # 将保存参数的目录带上所用测试数据集的编号
     p.save_dir = p.save_base_dir + str(p.test_set) + '/'
     p.model_dir = p.save_base_dir + str(p.test_set) + '/' + p.train_model + '/'
+    # set the name for the config config_train.yaml
     p.config = p.model_dir + '/config_' + p.phase + '.yaml'
 
     if not load_arg(p):

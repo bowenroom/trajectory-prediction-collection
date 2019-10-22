@@ -160,7 +160,7 @@ class Processor():
             # console log
             print(
                 '----epoch {}, train_loss={:.5f}, valid_error={:.3f}, valid_final={:.3f},test_error={:.3f},valid_final={:.3f}'
-                .format(epoch, train_loss, val_error, val_final, test_error, test_final_error))
+                    .format(epoch, train_loss, val_error, val_final, test_error, test_final_error))
 
     def smaller(self, A, Aepoch, B, Bepoch):
         if A < B:
