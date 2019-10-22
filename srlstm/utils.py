@@ -40,14 +40,14 @@ class DataLoader_bytrajec2():
                 self.test_set = [4, 5]
             else:
                 self.test_set = [self.args.test_set]
-
+            # 此处的test可以理解为验证集，是文章中的leave one out 的具体的代码写法,同时代码中的数据集需要注意：0~4 for ETH-univ, ETH-hotel, UCY-zara01, UCY-zara02, UCY-univ
             for x in self.test_set:
                 train_set.remove(x)
             self.train_dir = [self.data_dirs[x] for x in train_set]
             self.test_dir = [self.data_dirs[x] for x in self.test_set]
             self.trainskip = [skip[x] for x in train_set]
             self.testskip = [skip[x] for x in self.test_set]
-
+        # 学会这种写法，将划分好的数据文件以cpkl的形式保存在save_dir之中
         self.train_data_file = os.path.join(self.args.save_dir, "train_trajectories.cpkl")
         self.test_data_file = os.path.join(self.args.save_dir, "test_trajectories.cpkl")
         self.train_batch_cache = os.path.join(self.args.save_dir, "train_batch_cache.cpkl")
@@ -64,6 +64,8 @@ class DataLoader_bytrajec2():
             self.frameped_dict, self.pedtraject_dict = self.load_dict(self.train_data_file)
             self.dataPreprocess('train')
         if not (os.path.exists(self.test_batch_cache)):
+            # test_pedtraject_dict: 存放的是 pedId frameId cor_x cor_y
+            # test_frameped_dict: 存放的是frameId pedIds,类似于rawdata 只不过没有了坐标信息
             self.test_frameped_dict, self.test_pedtraject_dict = self.load_dict(self.test_data_file)
             self.dataPreprocess('test')
 
@@ -105,6 +107,7 @@ class DataLoader_bytrajec2():
             # Load the data from the csv file
             data = np.genfromtxt(file_path, delimiter=',')
             # Frame IDs of the frames in the current dataset
+            # Pedlist:出现过的所有行人的index
 
             Pedlist = np.unique(data[1, :]).tolist()
             numPeds = len(Pedlist)
@@ -122,12 +125,16 @@ class DataLoader_bytrajec2():
                 if ind % 100 == 0:
                     print(ind, len(Pedlist))
                 # Extract trajectories of one person
+                # FrameContainPed： 用来记录视频中对应的行人的轨迹
                 FrameContainPed = data[:, data[1, :] == pedi]
-                # Extract peds list
+                # Extract peds list,
+                # FrameList：将包含有这个行人的视频帧数提取出来
                 FrameList = FrameContainPed[0, :].tolist()
                 if len(FrameList) < 2:
+                    # 闪现的人就不考虑了
                     continue
                 # Add number of frames of this trajectory
+                # numFrame_data：用来记录行人一共出现了多少帧
                 numFrame_data[seti].append(len(FrameList))
                 # Initialize the row of the numpy array
                 Trajectories = []
@@ -156,12 +163,16 @@ class DataLoader_bytrajec2():
         frame_id_in_set = []
         total_frame = 0
         for seti, dict in enumerate(data_dict):
+            # seq_length 指的是滑动的时间窗口
             frames = sorted(dict)
             maxframe = max(frames) - self.args.seq_length
             frames = [x for x in frames if not x > maxframe]
             total_frame += len(frames)
+            # set_id： train中一共6段视频，这一行是要扩展set_id,对每6段视频中的每一帧都标记上对应的id,同一个视频中的每一帧标记同一个id
             set_id.extend(list(seti for i in range(len(frames))))
+            # frame_id_in_set： 所有的视频中的所有帧数据
             frame_id_in_set.extend(list(frames[i] for i in range(len(frames))))
+        # 6段视频一共6094帧，对每一帧都来一个id标记
         all_frame_id_list = list(i for i in range(total_frame))
 
         data_index = np.concatenate((np.array([frame_id_in_set], dtype=int), np.array([set_id], dtype=int),
@@ -196,6 +207,7 @@ class DataLoader_bytrajec2():
             if i % 100 == 0:
                 print(i, '/', data_index.shape[1])
             cur_frame, cur_set, _ = data_index[:, i]
+            # set() 函数创建一个无序不重复元素集
             framestart_pedi = set(frameped_dict[cur_set][cur_frame])
             try:
                 frameend_pedi = set(frameped_dict[cur_set][cur_frame + self.args.seq_length * skip[cur_set]])

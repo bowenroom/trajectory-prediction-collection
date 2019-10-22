@@ -8,6 +8,7 @@ from utils import *
 from basemodel import *
 
 
+# begin to construct the model
 class SR_LSTM(nn.Module):
     def __init__(self, args):
         super(SR_LSTM, self).__init__()
@@ -16,9 +17,9 @@ class SR_LSTM(nn.Module):
         self.using_cuda = args.using_cuda
         self.inputLayer = nn.Linear(args.input_size, args.input_embed_size)
         self.cell = LSTMCell(args.input_embed_size, args.rnn_size)
-
+        # GCN: graph based convolution network model
         self.gcn = GCN(args, self.args.rela_embed_size, args.rnn_size)
-
+        # passing time 代表的是是否需要States refinement layers
         if self.args.passing_time > 1:
             self.gcn1 = GCN(args, self.args.rela_embed_size, args.rnn_size)
             if self.args.passing_time == 3:
@@ -114,4 +115,4 @@ class SR_LSTM(nn.Module):
             cell_states[node_index] = cell_states_current
 
         return outputs, hidden_states, cell_states, (
-        value1_sum / self.args.seq_length, value2_sum / self.args.seq_length, value3_sum / self.args.seq_length)
+            value1_sum / self.args.seq_length, value2_sum / self.args.seq_length, value3_sum / self.args.seq_length)

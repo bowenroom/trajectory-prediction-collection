@@ -134,7 +134,7 @@ class LSTMCell(RNNCellBase):
 
         cy = forgetgate * cx + ingate * cellgate
         hy = outgate * F.tanh(cy)
-
+        # hy cy 分别代表着 hidden state cell state
         return outgate, hy, cy
 
 
@@ -191,6 +191,7 @@ class GCN(nn.Module):
         value1, value2, value3 = torch.zeros(1), torch.zeros(1), torch.zeros(1)
 
         self.N = corr_index.shape[0]
+        # 此处的repeat相当于在对应的维度上将此处原有的维度×self.N
         nei_inputs = self_h.repeat(self.N, 1)
 
         nei_index_t = nei_index.view((-1))

@@ -8,11 +8,12 @@ import time
 import torch.nn as nn
 import yaml
 
+from torch.utils.tensorboard import SummaryWriter
 
 class Processor():
     def __init__(self, args):
         self.args = args
-
+        # 进入utils, 开始对数据的格式进行处理
         Dataloader = DataLoader_bytrajec2
 
         self.dataloader = Dataloader(args)
@@ -160,7 +161,7 @@ class Processor():
             # console log
             print(
                 '----epoch {}, train_loss={:.5f}, valid_error={:.3f}, valid_final={:.3f},test_error={:.3f},valid_final={:.3f}'
-                .format(epoch, train_loss, val_error, val_final, test_error, test_final_error))
+                    .format(epoch, train_loss, val_error, val_final, test_error, test_final_error))
 
     def smaller(self, A, Aepoch, B, Bepoch):
         if A < B:
