@@ -183,7 +183,8 @@ class GCN(nn.Module):
             W: message passing weight, namely self.W_nei when train one SR layer
         Return:
             Refined states
-            Tracked variable
+            Tracked variable`12
+
         '''
         outgate, self_h, self_c = lstm_state
 

@@ -175,6 +175,7 @@ class DataLoader_bytrajec2():
         # 6段视频一共6094帧，对每一帧都来一个id标记
         all_frame_id_list = list(i for i in range(total_frame))
 
+        # data_index中，第一行是视频在对应的单个数据集中的frame_id,第二行是隶属于哪一个数据集，第三行是每一帧对应的标记id
         data_index = np.concatenate((np.array([frame_id_in_set], dtype=int), np.array([set_id], dtype=int),
                                      np.array([all_frame_id_list], dtype=int)), 0)
         if ifshuffle:
@@ -200,21 +201,27 @@ class DataLoader_bytrajec2():
             skip = self.trainskip
         else:
             skip = self.testskip
-
+        # pedestrian count，对行人进行计数
         ped_cnt = 0
         last_frame = 0
         for i in range(data_index.shape[1]):
             if i % 100 == 0:
                 print(i, '/', data_index.shape[1])
+                # cur:current
             cur_frame, cur_set, _ = data_index[:, i]
             # set() 函数创建一个无序不重复元素集
+            # framestart_pedi 计算起始帧中有多少个行人
             framestart_pedi = set(frameped_dict[cur_set][cur_frame])
             try:
+                # aargs.seq_length 指的是滑动窗口×skip，跳过一部分的数据
                 frameend_pedi = set(frameped_dict[cur_set][cur_frame + self.args.seq_length * skip[cur_set]])
             except:
                 continue
+                # present_pedi中涵盖有起始到结束帧中所有的行人的id
             present_pedi = framestart_pedi | frameend_pedi
             if (framestart_pedi & frameend_pedi).__len__() == 0:
+                # print(1)
+                # 如果发现从起始帧到结束帧这一整段都没有同一个行人id的话，则跳出当前data_index的循环体
                 continue
             traject = ()
             IFfull = []
@@ -347,6 +354,7 @@ class DataLoader_bytrajec2():
         end_n = np.where(trajectory[:, 0] == endframe)
         iffull = False
         ifexsitobs = False
+        # ifexistobs: Just ignore trajectories if their data don't exsist at the last obversed time step (easy for data shift)
 
         if start_n[0].shape[0] == 0 and end_n[0].shape[0] != 0:
             start_n = 0
@@ -374,6 +382,7 @@ class DataLoader_bytrajec2():
         return_trajec[offset_start:offset_end + 1, :3] = candidate_seq
 
         if return_trajec[self.args.obs_length - 1, 1] != 0:
+            # Just ignore trajectories if their data don't exsist at the last obversed time step (easy for data shift)
             ifexsitobs = True
 
         if offset_end - offset_start >= seq_length - 1:
